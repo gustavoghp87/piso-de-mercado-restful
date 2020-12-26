@@ -1,0 +1,19 @@
+{
+    "groups": [
+        {
+            "name": "Newcomer",
+            "channels": ["Welcome", "Help"],
+            "users": ["Super", "Edmond", "Bob"]
+        },
+        {
+            "name": "Artificially Unintelligent",
+            "channels": ["General", "Text"],
+            "users": ["Super", "Edmond"]
+        },
+        {
+            "name": "Another group",
+            "channels": ["another", "test"],
+            "users": ["Bob", "Edmond"]
+        }
+    ]
+}
