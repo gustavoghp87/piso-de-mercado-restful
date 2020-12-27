@@ -12,6 +12,7 @@ client.connect().then(conn => {
 
 app.use('/images', express.static(path.resolve(__dirname, 'images')))
 app.use('/', require('./routes/index.routes'))
+app.use('/', require('./controllers/primary'))
 
 const port = process.env.PORT || 3000
 const server = require('http').createServer(app)
@@ -19,6 +20,7 @@ module.exports = server
 
 server.listen(port, () => {
     console.log(`Server started on port: ${port}`)
-
     require('./routes/socket')
+    require('./controllers/primaryLogin')
+    //require('./controllers/primSocket')
 })
