@@ -14,8 +14,8 @@
     "express": "^4.17.1",
     "formidable": "^1.2.2",
     "mongodb": "^3.6.3",
-    "rofexjs": "^1.1.4",
-    "socket.io": "^3.0.4"
+    "socket.io": "^3.0.4",
+    "tradingview-scraper": "^0.3.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.6"

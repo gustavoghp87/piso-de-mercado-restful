@@ -293,30 +293,10 @@ The users service contains the requests for all dashboard, groups and channel da
 * users - Each document is the data of the users. This includes their username, their admins status, their groups and channels.
 * messages - Each document is a message that was sent in a channel.
 
-## Miscellaneous 
-### Modules Used
-* `npm init`
-* `npm install express`
-* `npm install socket.io`
-* `npm install body-parser`
-* `npm install @types/socket.io-client` - SocketIO for client
-* `npm install formidable`
 
 ### Socket.IO Bug
 * In `polyfill.ts`, add:
 ```javascript
 (window as any).global = window;
 ```
-
-### JSON Body-Parser
-```javascript
-const bodyParser = require('body-parser')
-app.use(bodyParser.json())
-```
-
-## Contact
-Author: Edmond Chuc  
-Website: www.edmondchuc.com  
-Repository: https://github.com/edmondchuc/web-chat-app
-
 
