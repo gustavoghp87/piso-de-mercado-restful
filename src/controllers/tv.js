@@ -3,7 +3,9 @@ const { TradingViewAPI } = require("tradingview-scraper")
 const tv = new TradingViewAPI()
 
 router.get('/', (req, res) => {
-    tv.getTicker(req.query.ticket).then((ticket) => {
+    const ticket = req.query.ticket
+    console.log("TICKET:", ticket)
+    tv.getTicker(ticket).then((ticket) => {
         console.log(ticket)
         res.json(ticket)
     })

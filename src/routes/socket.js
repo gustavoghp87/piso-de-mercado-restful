@@ -35,8 +35,7 @@ io.on('connection', (socket) => {
     })
     
     socket.on('new-message', (content) => {
-        console.log('NEW MESSAGE:')
-        console.log(content)
+        console.log('NEW MESSAGE:', content)
         const collection = client.db('chatencio').collection("messages")
         collection.insertOne(content)
         let room = content.groupName + content.channelName

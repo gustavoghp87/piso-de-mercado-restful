@@ -19,7 +19,7 @@ router.get('/api/channel/messages', async (req, res) => {
 
 // upload image
 router.post('/api/image/upload', (req, res) => {
-    console.log('POST request at /api/image/upload')
+    console.log('POST request at /api/image/upload', 'resolve:', path.resolve(__dirname, '..', 'images'))
     let form = new formidable.IncomingForm({uploadDir: path.resolve(__dirname, '..', 'images')})
     form.keepExtensions = true
 
@@ -34,7 +34,7 @@ router.post('/api/image/upload', (req, res) => {
     })
 
     form.on('fileBegin', (name, file) => {
-        file.path = form.uploadDir + "/" + file.name
+        file.path = path.resolve(__dirname, '..', 'images', file.name)
         console.log('File path: ' + file.path)
     })
 
@@ -45,7 +45,7 @@ router.post('/api/image/upload', (req, res) => {
             data: {'filename': file.name, 'size': file.size},
             numberOfImages: 1,
             message: 'upload successful',
-            path: file.path
+            path: ''
         })
     })
 
