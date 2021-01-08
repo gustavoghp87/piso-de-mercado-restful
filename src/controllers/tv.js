@@ -11,6 +11,26 @@ router.get('/', (req, res) => {
     })
 })
 
+router.post('/', async (req, res) => {
+    const tickets = req.body
+    console.log("TICKETS:", tickets)
+    let ticketsObj = []
+
+    let i = 0
+    while (i<tickets.length) {
+        console.log(tickets[i])
+        try {
+            const ticket = await tv.getTicker(tickets[i])
+            ticketsObj.push(ticket)
+        } catch (error) {console.error(error)}
+        i++
+    }
+
+    console.log(ticketsObj.length)
+    // console.log(ticketsObj)
+    res.json(ticketsObj)
+})
+
 
 module.exports = router
 
