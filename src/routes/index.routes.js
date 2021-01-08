@@ -9,7 +9,7 @@ const path = require('path')
 
 
 // get messages for particular channel in a group
-router.get('/api/channel/messages', async (req, res) => {
+router.get('/channel/messages', async (req, res) => {
     console.log('GET request at /api/channel/messages')
     const groupName = req.query.groupName
     const channelName = req.query.channelName
@@ -18,7 +18,7 @@ router.get('/api/channel/messages', async (req, res) => {
 })
 
 // upload image
-router.post('/api/image/upload', (req, res) => {
+router.post('/image/upload', (req, res) => {
     console.log('POST request at /api/image/upload', 'resolve:', path.resolve(__dirname, '..', 'images'))
     let form = new formidable.IncomingForm({uploadDir: path.resolve(__dirname, '..', 'images')})
     form.keepExtensions = true
@@ -54,7 +54,7 @@ router.post('/api/image/upload', (req, res) => {
 
 
 // update user profile image
-router.post('/api/user/update', (req, res) => {
+router.post('/user/update', (req, res) => {
     const collection = client.db('chatencio').collection(collectionName)
     console.log("req.body de /user/update", req.body)
     const imagePath = req.body.profileImage
@@ -65,7 +65,7 @@ router.post('/api/user/update', (req, res) => {
 
 
 // Return user data back to client
-router.get('/api/user', (req, res) => {
+router.get('/user', (req, res) => {
     // createSuperUser()
     const username = req.query.username
     console.log('GET request at /api/user')
@@ -87,13 +87,13 @@ router.get('/api/user', (req, res) => {
 })
 
 // // return an array of group names as strings for admin users
-router.get('/api/groups', (req, res) => {
+router.get('/groups', (req, res) => {
     console.log('GET request at /api/groups')
     functions.getGroups(res)
 })
 
 // // Update email of client
-router.post('/api/email', (req, res) => {
+router.post('/email', (req, res) => {
     console.log('POST request at /api/email')
     const username = req.body.username
     const email = req.body.email
@@ -106,7 +106,7 @@ router.post('/api/email', (req, res) => {
 })
 
 // // admin creates a group
-router.post('/api/createGroup', (req, res) => {
+router.post('/createGroup', (req, res) => {
     console.log('POST request at /api/createGroup')
     let username = req.body.username
     let groupName = req.body.groupName
@@ -143,7 +143,7 @@ router.post('/api/createGroup', (req, res) => {
 })
 
 // admin removes a group
-router.delete('/api/removeGroup/:groupName', (req, res) => {
+router.delete('/removeGroup/:groupName', (req, res) => {
     console.log('DELETE request at /api/removeGroup')
     const groupName = req.params.groupName
 
@@ -172,7 +172,7 @@ router.delete('/api/removeGroup/:groupName', (req, res) => {
 
 
 // get all channels in a group
-router.get('/api/:group/channels', (req, res) => {
+router.get('/:group/channels', (req, res) => {
     console.log('GET request at /api/:group/channels')
     const groupName = req.params.group
     console.log(`\tCollating all channels for group ${groupName}`)
@@ -197,7 +197,7 @@ router.get('/api/:group/channels', (req, res) => {
 })
 
 // get all the users in a group
-router.get('/api/:groupName/users', (req, res) => {
+router.get('/:groupName/users', (req, res) => {
     console.log('GET request at /api/:groupName/users')
     const groupName = req.params.groupName
     console.log(`\tReceived groupName: ${groupName}`)
@@ -206,7 +206,7 @@ router.get('/api/:groupName/users', (req, res) => {
 
 
 // create new channel in a group
-router.post('/api/channel/create', (req, res) => {
+router.post('/channel/create', (req, res) => {
     console.log(`POST request at /api/channel/create`)
     console.log(req.body)
     const username = req.body.username
@@ -254,7 +254,7 @@ router.post('/api/channel/create', (req, res) => {
 })
 
 // remove channel of a group
-router.delete('/api/channel/remove/:username.:groupName.:channelName', (req, res) => {
+router.delete('/channel/remove/:username.:groupName.:channelName', (req, res) => {
     console.log('DELETE request at /api/channel/remove:groupName.:channelName')
     console.log(req.params)
     const username = req.params.username
@@ -293,7 +293,7 @@ router.delete('/api/channel/remove/:username.:groupName.:channelName', (req, res
 })
 
 // get all users and their data
-router.get('/api/users/all', (req, res) => {
+router.get('/users/all', (req, res) => {
     console.log('GET request at /api/users/all')
     functions.retrieveUsers((users) => {
         // console.log(users)
@@ -302,7 +302,7 @@ router.get('/api/users/all', (req, res) => {
 })
 
 // remove user from a group
-router.delete('/api/remove/:groupName.:username', (req, res) => {
+router.delete('/remove/:groupName.:username', (req, res) => {
     console.log('DELETE request at /api/:groupName/:username/remove')
     let username = req.params.username
     let groupName = req.params.groupName
@@ -330,7 +330,7 @@ router.delete('/api/remove/:groupName.:username', (req, res) => {
 })
 
 // add user to a group
-router.post('/api/groups/add', (req, res) => {
+router.post('/groups/add', (req, res) => {
     console.log('POST request at /api/groups/add')
     const username = req.body.username
     const groupName = req.body.groupName
@@ -372,7 +372,7 @@ router.post('/api/groups/add', (req, res) => {
 })
 
 // add new user to a channel in a group TODO: duplicate key issue when creating new user
-router.post('/api/group/channel/add', (req, res) => {
+router.post('/group/channel/add', (req, res) => {
     console.log('POST request at /api/group/channel/add')
     // console.log(req.body)
     const username = req.body.username
@@ -440,7 +440,7 @@ router.post('/api/group/channel/add', (req, res) => {
 })
 
 // remove user from the system
-router.delete('/api/removeUserFromSystem/:username', (req, res) => {
+router.delete('/removeUserFromSystem/:username', (req, res) => {
     console.log('DELETE request at /api/removeUserFromSystem/:username')
     const username = req.params.username
     functions.retrieveUsers((users) => {
@@ -456,7 +456,7 @@ router.delete('/api/removeUserFromSystem/:username', (req, res) => {
 })
 
 // remove user from channel
-router.delete('/api/removeUserFromChannel/:groupName.:channelName.:username', (req, res) => {
+router.delete('/removeUserFromChannel/:groupName.:channelName.:username', (req, res) => {
     console.log('DELETE request at /api/remove/:groupName.:channelName.:username')
     const username = req.params.username
     const groupName = req.params.groupName
@@ -487,7 +487,7 @@ router.delete('/api/removeUserFromChannel/:groupName.:channelName.:username', (r
 })
 
 // make a user a group admin // TODO: check if this works
-router.post('/api/makeUserGroupAdmin', (req, res) => {
+router.post('/makeUserGroupAdmin', (req, res) => {
     console.log('POST request at /api/makeUserGroupAdmin')
     const username = req.body.username
     console.log(username)
@@ -506,7 +506,7 @@ router.post('/api/makeUserGroupAdmin', (req, res) => {
 })
 
 // make a user a super admin
-router.post('/api/makeUserSuperAdmin', (req, res) => {
+router.post('/makeUserSuperAdmin', (req, res) => {
     console.log('POST request at /api/makeUserSuperAdmin')
     const username = req.body.username
     console.log(username)
@@ -528,7 +528,7 @@ router.post('/api/makeUserSuperAdmin', (req, res) => {
     })
 })
 
-router.post('/api/user/validate', (req, res) => {
+router.post('/user/validate', (req, res) => {
     console.log("POST request at /api/user/validate", req.body)
     let username = req.body.username
     let password = req.body.password
@@ -550,8 +550,8 @@ router.post('/api/user/validate', (req, res) => {
     })
 })
 
-router.post('/api/user/create', (req, res) => {
-    console.log('/api/user/create')
+router.post('/user/create', (req, res) => {
+    console.log('/user/create')
     let user = req.body
     console.log(user)
     functions.createUser(user.username, user.password, user.email)
@@ -559,7 +559,7 @@ router.post('/api/user/create', (req, res) => {
 })
 
 
-router.post('/api/super/user/create', (req,res) => {
+router.post('/super/user/create', (req,res) => {
     functions.createSuperUser()
     res.json({success:true})
 })

@@ -3,12 +3,11 @@ const app = express()
 const path = require('path')
 const client = require('./controllers/database')
 
-
 app.use(require('cors')())
 app.use(express.json())
 
 app.use('/images', express.static(path.resolve(__dirname, 'images')))
-app.use('/', require('./routes/index.routes'))
+app.use('/api', require('./routes/index.routes'))
 app.use('/tv', require('./controllers/tv'))
 
 const port = process.env.PORT || 3000
