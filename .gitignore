@@ -1,7 +1,10 @@
+# Ignore the images directory that is used to upload user profile images and channel chat images
+# images/*
 
 ### Angular ###
 ## Angular ##
 # compiled output
+/build
 /dist
 /tmp
 /app/**/*.js
@@ -107,9 +110,3 @@ typings/
 
 
 # End of https://www.gitignore.io/api/node,angular
-
-
-
-
-# Ignore the images directory that is used to upload user profile images and channel chat images
-images/*

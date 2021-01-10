@@ -1,18 +1,19 @@
-const client = require('../controllers/database')
+import { client } from '../controllers/database'
+import { server } from '../index'
 
 
-const io = require('socket.io')(require('../index'), {
+export const io = require('socket.io')(server, {
     cors: {
         origin: "*",
         methods: ["GET", "POST"]
     }
 })
 
-io.on('connection', (socket) => {
+io.on('connection', (socket:any) => {
 
     console.log("Socket on", socket.id)
     // join room
-    socket.on('join', (content) => {
+    socket.on('join', (content:any) => {
         console.log('someone joined')
         console.log(content)
         const collection = client.db('chatencio').collection("messages")
@@ -23,7 +24,7 @@ io.on('connection', (socket) => {
         io.sockets.in(room).emit('message', content)
     })
     
-    socket.on('leave', (content) => {
+    socket.on('leave', (content:any) => {
         console.log('Someone left')
         console.log(content)
         const collection = client.db('chatencio').collection("messages")
@@ -34,15 +35,12 @@ io.on('connection', (socket) => {
         io.sockets.in(room).emit('message', content)
     })
     
-    socket.on('new-message', (content) => {
+    socket.on('new-message', (content:any) => {
         console.log('NEW MESSAGE:', content)
         const collection = client.db('chatencio').collection("messages")
         collection.insertOne(content)
         let room = content.groupName + content.channelName
         // io.emit('message', content)
         io.sockets.in(room).emit('message', content)
-    })  
+    })
 })
-
-
-module.exports = io

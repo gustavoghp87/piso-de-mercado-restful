@@ -1,8 +1,17 @@
-/**
- * The user data default template
- */
+export type typeGroup = {
+    name: string
+    channels: string[]
+}
 
- class UserDataTemplate {
+export class UserDataTemplate {
+    username: string
+    password: string
+    email: string
+    superAdmin: boolean
+    groupAdmin: boolean
+    profileImage: string
+    groups: typeGroup[]
+
     constructor() {
         this.username = "";
         this.password = "password";
@@ -12,15 +21,15 @@
         this.profileImage = "profile.gif";
         this.groups = [
             {
-                "name": "newbies",
-                "channels": [
+                name: "newbies",
+                channels: [
                     "general", 
                     "help"
                 ]
             },
             {
-                "name": "general",
-                "channels": [
+                name: "general",
+                channels: [
                     "general", 
                     "chitchat", 
                     "topic of the day"
@@ -29,6 +38,3 @@
         ]
     }
 }
-
-
-module.exports = UserDataTemplate
