@@ -4,8 +4,10 @@
   "description": "Chat app",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
     "dev": "concurrently \"tsc -w\" \"nodemon build/index.js\"",
-    "start": "node build/index.js"
+    "start": "node build/index.js",
+    "postinstall": "npm run tsc"
   },
   "author": "ghp",
   "license": "ISC",
