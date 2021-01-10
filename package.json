@@ -7,7 +7,7 @@
     "build": "tsc",
     "dev": "concurrently \"tsc -w\" \"nodemon build/index.js\"",
     "start": "node build/index.js",
-    "postinstall": "npm run tsc"
+    "postinstall": "npm run build"
   },
   "author": "ghp",
   "license": "ISC",
