@@ -1,113 +1,41 @@
-import formidable from 'formidable'
-export const router = require('express').Router()
 import { client, db, collecMsg, collecUsers } from '../controllers/database'
 import { typeGroup, UserDataTemplate } from '../models/UserDataTemplate'
 import * as functions from '../controllers/functions'
-import path from 'path'
+import { verifyAuth, verifyAdmin } from './verify'
 
 
-// get messages for particular channel in a group
-router.get('/channel/messages', async (req:any, res:any) => {
+export const router = require('express').Router()
+
+
+router.get('/channel/messages', verifyAuth, async (req:any, res:any) => {
     console.log('GET request at /api/channel/messages')
     const { groupName, channelName } = req.query
     const q = await client.db(db).collection(collecMsg).find({groupName,channelName}).toArray()
     res.send(q)
 })
 
-// upload image
-router.post('/image/upload', (req:any, res:any) => {
-    console.log('POST request at /api/image/upload', 'resolve:', path.resolve(__dirname, '..', '..', 'src', 'images'))
-    let form = new formidable.IncomingForm()
-    form.keepExtensions = true
-
-    form.on('error', (err) => {
-        console.log('error uploading fiel')
-        res.send({
-            result: "failed",
-            data: {},
-            numberOfImages: 0,
-            message: "Cannot upload images. Error: " + err
-        })
-    })
-
-    form.on('fileBegin', (name, file) => {
-        file.path = path.resolve(__dirname, '..', '..', 'src', 'images', file.name)
-        console.log('File path: ' + file.path)
-    })
-
-    form.on('file', (field, file) => {
-        console.log('woo, uploaded file', file.name)
-        res.send({
-            result: 'OK',
-            data: {
-                filename: file.name,
-                size: file.size
-            },
-            numberOfImages: 1,
-            message: 'upload successful',
-            path: file.name
-        })
-    })
-
-    form.parse(req)
-})
 
 
-// update user profile image
-router.post('/user/update', (req:any, res:any) => {
-    const collection = client.db(db).collection(collecUsers)
-    console.log("req.body de /user/update", req.body)
-    const imagePath = req.body.profileImage
-    console.log('POST request at /api/user/update', req.body.username, imagePath)
-    collection.updateOne({username: req.body.username}, {$set: {profileImage: imagePath}})
-    res.send({success:true})
-})
-
-
-// Return user data back to client
-router.get('/user', (req:any, res:any) => {
-    // createSuperUser()
-    const username = req.query.username
-    console.log('GET request at /api/user')
-    console.log(`\tFetching user data for: ${username}`)
-
-    functions.retrieveUserData(username, ((userData:UserDataTemplate) => {
-        if (userData) {
-            console.log(`\tResponding with data on user: ${username}`)
-            res.send(userData)
-        } else {
-            console.log(`\tUser ${username} was not found.`)
-            console.log(`\tCreating user ${username} and saving to file`)
-            userData = new UserDataTemplate()
-            userData.username = username
-            functions.addUser(userData)
-            console.log(`\tResponding with data on user: ${username}`)
-            setTimeout(() => {res.send(userData)}, 100)
-        }
-    }))
-})
-
-// // return an array of group names as strings for admin users
 router.get('/groups', (req:any, res:any) => {
     console.log('GET request at /api/groups')
     functions.getGroups(res)
 })
 
-// // Update email of client
-router.post('/email', (req:any, res:any) => {
+
+
+router.post('/email', verifyAuth, (req:any, res:any) => {
     console.log('POST request at /api/email')
-    const { username } = req.body
-    const { email } = req.body
-    
-    // mongo updateOne user by username and update its email 
-    const collection = client.db(db).collection(collecUsers)
-    collection.updateOne({username}, {$set: {email}}, (err, result) => {
+    const { username, email } = req.body
+    client.db(db).collection(collecUsers).updateOne(username, {$set: {email}}, (err, result) => {
+        if (err) return res.json({success:false})
         res.send({success:true})
     })
 })
 
-// // admin creates a group
-router.post('/createGroup', (req:any, res:any) => {
+
+
+
+router.post('/createGroup', verifyAdmin, (req:any, res:any) => {
     console.log('POST request at /api/createGroup')
     const { username, groupName } = req.body
     console.log(`\tCreating new group ${groupName} for user ${username}`)
@@ -142,8 +70,8 @@ router.post('/createGroup', (req:any, res:any) => {
     })
 })
 
-// admin removes a group
-router.delete('/removeGroup/:groupName', (req:any, res:any) => {
+
+router.delete('/removeGroup/:groupName', verifyAdmin, (req:any, res:any) => {
     console.log('DELETE request at /api/removeGroup')
     const groupName = req.params.groupName
 
@@ -171,8 +99,8 @@ router.delete('/removeGroup/:groupName', (req:any, res:any) => {
 })
 
 
-// get all channels in a group
-router.get('/:group/channels', (req:any, res:any) => {
+
+router.get('/:group/channels', verifyAuth, (req:any, res:any) => {
     console.log('GET request at /api/:group/channels')
     const groupName = req.params.group
     console.log(`\tCollating all channels for group ${groupName}`)
@@ -196,8 +124,8 @@ router.get('/:group/channels', (req:any, res:any) => {
     })
 })
 
-// get all the users in a group
-router.get('/:groupName/users', async (req:any, res:any) => {
+
+router.get('/:groupName/users', verifyAuth, async (req:any, res:any) => {
     console.log('GET request at /api/:groupName/users')
     const { groupName } = req.params
     console.log(`\tReceived groupName: ${groupName}`)
@@ -206,8 +134,8 @@ router.get('/:groupName/users', async (req:any, res:any) => {
 })
 
 
-// create new channel in a group
-router.post('/channel/create', (req:any, res:any) => {
+
+router.post('/channel/create', verifyAdmin, (req:any, res:any) => {
     console.log(`POST request at /api/channel/create`)
     console.log(req.body)
     const { username, groupName, channelName } = req.body
@@ -252,8 +180,8 @@ router.post('/channel/create', (req:any, res:any) => {
     })
 })
 
-// remove channel of a group
-router.delete('/channel/remove/:username.:groupName.:channelName', (req:any, res:any) => {
+
+router.delete('/channel/remove/:username.:groupName.:channelName', verifyAdmin, (req:any, res:any) => {
     console.log('DELETE request at /api/channel/remove:groupName.:channelName')
     console.log(req.params)
     const { username, groupName, channelName } = req.body
@@ -289,8 +217,8 @@ router.delete('/channel/remove/:username.:groupName.:channelName', (req:any, res
     })
 })
 
-// get all users and their data
-router.get('/users/all', (req:any, res:any) => {
+
+router.get('/users/all', verifyAuth, (req:any, res:any) => {
     console.log('GET request at /api/users/all')
     functions.retrieveUsers((users:UserDataTemplate[]) => {
         // console.log(users)
@@ -298,8 +226,8 @@ router.get('/users/all', (req:any, res:any) => {
     })
 })
 
-// remove user from a group
-router.delete('/remove/:groupName.:username', (req:any, res:any) => {
+
+router.delete('/remove/:groupName.:username', verifyAdmin, (req:any, res:any) => {
     console.log('DELETE request at /api/:groupName/:username/remove')
     let username = req.params.username
     let groupName = req.params.groupName
@@ -326,8 +254,8 @@ router.delete('/remove/:groupName.:username', (req:any, res:any) => {
     })
 })
 
-// add user to a group
-router.post('/groups/add', (req:any, res:any) => {
+
+router.post('/groups/add', verifyAdmin, (req:any, res:any) => {
     console.log('POST request at /api/groups/add')
     const username = req.body.username
     const groupName = req.body.groupName
@@ -349,7 +277,7 @@ router.post('/groups/add', (req:any, res:any) => {
             let user = new UserDataTemplate()
             user.username = username
             user.groups.push({name: groupName, channels: ["general"]})
-            functions.addUser(user)
+            // functions.addUser(user)
         }
         functions.writeUsers(users, () => {
             console.log(users)
@@ -363,6 +291,7 @@ router.post('/groups/add', (req:any, res:any) => {
         })
     })
 })
+
 
 // add new user to a channel in a group TODO: duplicate key issue when creating new user
 router.post('/group/channel/add', (req:any, res:any) => {
@@ -391,7 +320,7 @@ router.post('/group/channel/add', (req:any, res:any) => {
             )
             console.log(user)
             users.push(user)
-            functions.addUser(user)
+            // functions.addUser(user)
         } else { // if they do exist
             exists = false // now use it to check if group exists
             for (let user of users) {
@@ -518,34 +447,40 @@ router.post('/makeUserSuperAdmin', (req:any, res:any) => {
     })
 })
 
-router.post('/user/validate', (req:any, res:any) => {
-    console.log("POST request at /api/user/validate", req.body)
-    let { username, password } = req.body
-    console.log(username, password)
-    const collection = client.db(db).collection(collecUsers)
-    collection.find({username}).toArray( (err, result) => {
-        console.log(result)
-        // no user found
-        if (result.length === 0) res.send({success:true})
-        else {
-            // user found, check for password
-            let storedPassword = result[0].password
-            if (password === storedPassword) res.send({success:true})
-            else res.send({success:false})
+
+router.post('/super/user/create', verifyAdmin, (req:any, res:any) => {
+
+    client.db(db).collection(collecUsers).insertOne(
+        {
+            username: "Super",
+            password: "password",
+            email: "super@admin.com",
+            superAdmin: true,
+            groupAdmin: true,
+            profileImage: "profile.gif",
+            groups: [
+                {
+                    name: "newbies",
+                    channels: [
+                        "general",
+                        "help"
+                    ]
+                },
+                {
+                    name: "general",
+                    channels: [
+                        "general",
+                        "chitchat",
+                        "topic of the day"
+                    ]
+                }
+            ]
+        }, (err:any, result:any) => {
+            if (err) console.log(err)
+            else console.log(result)
+                        
         }
-    })
-})
-
-router.post('/user/create', (req:any, res:any) => {
-    console.log('/user/create')
-    let user = req.body
-    console.log(user)
-    functions.createUser(user.username, user.password, user.email)
-    res.send({success:true})
-})
-
-router.post('/super/user/create', (req:any, res:any) => {
-    functions.createSuperUser()
+    )
     res.json({success:true})
 })
 

@@ -12,16 +12,20 @@
   "author": "ghp",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.0.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "formidable": "^1.2.2",
+    "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.6.3",
     "socket.io": "^3.0.4",
     "tradingview-scraper": "^0.3.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^3.0.0",
     "@types/express": "^4.17.9",
     "@types/formidable": "^1.0.32",
+    "@types/jsonwebtoken": "^8.5.0",
     "@types/mongodb": "^3.6.3",
     "concurrently": "^5.3.0",
     "nodemon": "^2.0.6",

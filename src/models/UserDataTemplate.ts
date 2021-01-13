@@ -11,14 +11,16 @@ export class UserDataTemplate {
     groupAdmin: boolean
     profileImage: string
     groups: typeGroup[]
+    token:string
 
     constructor() {
-        this.username = "";
-        this.password = "password";
-        this.email = "";
-        this.superAdmin = false;
-        this.groupAdmin = false;
-        this.profileImage = "profile.gif";
+        this.username = ""
+        this.password = "password"
+        this.email = ""
+        this.superAdmin = false
+        this.groupAdmin = false
+        this.profileImage = "profile.png"
+        this.token = ""
         this.groups = [
             {
                 name: "newbies",

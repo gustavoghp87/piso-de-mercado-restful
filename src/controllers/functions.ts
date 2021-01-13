@@ -1,43 +1,21 @@
 import { typeGroup, UserDataTemplate } from "../models/UserDataTemplate"
 import { client, db, collecUsers } from './database'
+import { jwtKey } from '../index'
+import jwt from 'jsonwebtoken'
 
 
-// retrieve all the users in the database
+export const verifyToken = (token:string) => {
+    const verify = jwt.verify(token, jwtKey)
+    if (verify) return true
+    return false
+}
+
 export const retrieveUsers = (callback:any) => {
-    const collection = client.db(db).collection(collecUsers)
-    collection.find().toArray( (err:any, result:any) => {
+    client.db(db).collection(collecUsers).find().toArray((err:any, result:any) => {
         callback(result)
     })
 }
 
-// retrieve the user data for a specific user
-export const retrieveUserData = (username:string, callback:any) => {
-    let userData:UserDataTemplate
-    retrieveUsers((users:UserDataTemplate[]) => {
-        for (let i = 0; i < users.length; i++) {
-            if (users[i].username === username) userData = users[i]
-        }
-        callback(userData)
-    })
-}
-
-// Add a new user to the system.
-export const addUser = (userData:UserDataTemplate) => {
-    console.log(userData)
-    const collection = client.db(db).collection(collecUsers)
-    collection.find().toArray( (err:any, result:UserDataTemplate[]) => {
-        let exists = true
-        for (let user of result) {
-            if (user.username === userData.username) exists = true
-        }
-        if (!exists) {
-            collection.insertOne(userData, (err:any, result:any) => {})
-        }
-    })
-}
-
-
-// get all the groups for admins
 export const getGroups = (res:any) => {
     retrieveUsers((users:UserDataTemplate[]) => {
         let groups:Object[] = []
@@ -82,73 +60,37 @@ export const writeUsers = (users:UserDataTemplate[], callback:any) => {
 }
 
 
-export const createUser = (username:string, password:string, email:string) => {
-    const collection = client.db(db).collection(collecUsers)
-    collection.insertOne(
-        {
-            username,
-            password,
-            email,
-            superAdmin: false,
-            groupAdmin: false,
-            profileImage: "profile.gif",
-            groups: [
-                {
-                    name: "newbies",
-                    channels: [
-                        "general",
-                        "help"
-                    ]
-                },
-                {
-                    name: "general",
-                    channels: [
-                        "general",
-                        "chitchat",
-                        "topic of the day"
-                    ]
-                }
-            ]
-        }, (err:any, result:any) => {
+export const createUser = async (username:string, password:string, email:string) => {
 
-        }
-    )
+    const user:UserDataTemplate = {
+        username,
+        password,
+        email,
+        superAdmin: false,
+        groupAdmin: false,
+        profileImage: "profile.gif",
+        token: "",
+        groups: [
+            {
+                name: "newbies",
+                channels: [
+                    "general",
+                    "help"
+                ]
+            },
+            {
+                name: "general",
+                channels: [
+                    "general",
+                    "chitchat",
+                    "topic of the day"
+                ]
+            }
+        ]
+    }
+    await client.db(db).collection(collecUsers).insertOne(user)
+    const newUser = await client.db(db).collection(collecUsers).findOne({username:user.username})
+    if (!newUser) return false
+    return true
 }
 
-
-// create the super user
-// not actively used, purpose is for use on fresh MongoDB installation
-export const createSuperUser = () => {
-    const collection = client.db(db).collection(collecUsers)
-    collection.insertOne(
-        {
-            username: "Super",
-            password: "password",
-            email: "super@admin.com",
-            superAdmin: true,
-            groupAdmin: true,
-            profileImage: "profile.gif",
-            groups: [
-                {
-                    name: "newbies",
-                    channels: [
-                        "general",
-                        "help"
-                    ]
-                },
-                {
-                    name: "general",
-                    channels: [
-                        "general",
-                        "chitchat",
-                        "topic of the day"
-                    ]
-                }
-            ]
-        }, (err:any, result:any) => {
-            if (err) console.log(err)
-            else console.log(result)
-                        
-        }
-    )
-}
