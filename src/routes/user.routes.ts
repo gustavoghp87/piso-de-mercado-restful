@@ -51,13 +51,15 @@ router.post('/create', async (req:any, res:any) => {
     const user = req.body
     const preUser = await client.db(db).collection(collecUsers).findOne({username:user.username})
     if (preUser) return res.json({success:false, exists:true})
+    if (user.password.length<10) return res.json({success:false, characters:true})
     const cryptedPassword = await bcrypt.hash(user.password, 11)
     const createUser = await functions.createUser(user.username, cryptedPassword, user.email)
     if (createUser) res.json({success:true})
     else res.json({success:false})
 })
 
-router.post('/upload-image', verifyAuth, (req:any, res:any) => {
+router.post('/upload-image', (req:any, res:any) => {
+
     console.log('POST request at /api/user/upload-image', 'resolve:', path.resolve(__dirname, '..', '..', 'src', 'images'))
     let form = new formidable.IncomingForm()
     form.keepExtensions = true
@@ -77,29 +79,27 @@ router.post('/upload-image', verifyAuth, (req:any, res:any) => {
         console.log('File path: ' + file.path)
     })
 
+    
     form.on('file', (field, file) => {
-        console.log('woo, uploaded file', file.name)
+        console.log('woo, uploaded file')
         res.send({
-            result: 'OK',
-            data: {
-                filename: file.name,
-                size: file.size
-            },
+            success: true,
+            data: {'filename': file.name, 'size': file.size},
             numberOfImages: 1,
             message: 'upload successful',
-            path: file.name
+            path: file.path
         })
     })
-
+    
     form.parse(req)
 })
 
 router.post('/update', verifyAuth, (req:any, res:any) => {
     console.log("req.body de /user/update", req.body)
-    const { profileImage } = req.body
-    console.log('POST request at /api/user/update', req.body.username, profileImage)
+    const { username, profileImage } = req.body
+    console.log('POST request at /api/user/update', username, profileImage)
     try {
-        client.db(db).collection(collecUsers).updateOne({username: req.body.username}, {$set: {profileImage}})
+        client.db(db).collection(collecUsers).updateOne({username}, {$set: {profileImage}})
         res.send({success:true})
     } catch (e) {console.error(e); return res.json({success:false})}
 })

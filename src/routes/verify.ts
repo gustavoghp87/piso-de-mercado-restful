@@ -2,7 +2,7 @@ import { client, db, collecUsers } from '../controllers/database'
 
 export const verifyAuth = async (req:any, res:any, next:any) => {
     let { username, token } = req.body
-    console.log(`Verificando Auth(${username}, ${token})`);
+    console.log(`Verificando Auth(${username}, ${token})`)
     if (!username || !token) return res.json({auth:false})
     if (token.includes('token=')) token = token.split('oken=')[1]
     const user = await client.db(db).collection(collecUsers).findOne({username})
