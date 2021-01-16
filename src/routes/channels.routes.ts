@@ -57,12 +57,7 @@ router.post('/add-user', verifyAdmin, async (req:any, res:any) => {
                 }
             }
             console.log('WRITING USERS TO DB')
-            functions.writeUsers(users, () => {
-                // console.log(users)
-                // retrieveUsers((users) => {
-                //     res.send(users)
-                // })
-            })
+            functions.writeUsers(users)
         }
         // setTimeout(()=> {
             res.send(users)
@@ -90,8 +85,10 @@ router.post('/channel/create', verifyAdmin, async (req:any, res:any) => {
     let channels:string[] = []
 
     console.log('\tLoading data...')
-    const users:UserDataTemplate[] = await functions.retrieveUsers()
-    users.forEach(user => {
+
+    const users2 = await functions.retrieveUsers()
+
+    users2.forEach(user => {
         console.log(`\tAdding channel ${channelName} to group ${groupName}`)
         for (let user in users) {
             if (users.hasOwnProperty(user)) {
@@ -105,29 +102,28 @@ router.post('/channel/create', verifyAdmin, async (req:any, res:any) => {
                 }
             }
         }
-        functions.writeUsers(users, async () => { // write to disk
-            // setTimeout(() => {
-                const users:UserDataTemplate[] = await functions.retrieveUsers()
-                users.forEach(user => {
-                    for (let user in users) {
-                        if (users.hasOwnProperty(user)) {
-                            users[user].groups.forEach((group:any) => {
-                                if(group.name === groupName) {  // found the group
-                                    // if channel is not in channel list, add it
-                                    for (let channel of group.channels) {
-                                        if (!channels.includes(channel)) channels.push(channel)
-                                    }
-                                }
-                            })
+    })
+
+    functions.writeUsers(users2)
+        
+    const users = await functions.retrieveUsers()
+    users.forEach(user => {
+        for (let user in users) {
+            if (users.hasOwnProperty(user)) {
+                users[user].groups.forEach((group:any) => {
+                    if (group.name===groupName) {
+                        // if channel is not in channel list, add it
+                        for (let channel of group.channels) {
+                            if (!channels.includes(channel)) channels.push(channel)
                         }
                     }
-                    console.log(`\tFinished collating channels for group ${groupName}`)
-                    console.log(channels)
-                    res.send(channels)
                 })
-            // }, 100)
-        })
+            }
+        }
+        console.log(`\tFinished collating channels for group ${groupName}`)
+        console.log(channels)
     })
+    res.send(channels)
 })
 
 
@@ -149,8 +145,8 @@ router.post('/remove-channel', verifyAdmin, async (req:any, res:any) => {
             }
         // }
         
-        // write to file the new changes
-        functions.writeUsers(users, () => {})
+        functions.writeUsers(users)
+
         for (let user in users) {
             if (users.hasOwnProperty(user)) {
                 for (let group of users[user].groups) {
@@ -182,6 +178,7 @@ router.post('/remove-user', async (req:any, res:any) => {
                 }
             }
         }
+    })
         // for(group of users[username].groups) {
         //     if(group.name === groupName) {
         //         console.log(group.channels)
@@ -189,12 +186,9 @@ router.post('/remove-user', async (req:any, res:any) => {
         //         group.channels.splice(group.channels.indexOf(channelName), 1)
         //     }
         // }
-        functions.writeUsers(users, () => {
-            // setTimeout(() => {
-                res.send(users)
-            // }, 100)
-        })
-    })
+    functions.writeUsers(users)
+    
+    res.send(users)
 })
 
 
