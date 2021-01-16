@@ -67,7 +67,7 @@ router.post('/add-user', verifyAdmin, async (req:any, res:any) => {
 
 
 
-router.get('/channel/messages', verifyAuth, async (req:any, res:any) => {
+router.get('/messages', verifyAuth, async (req:any, res:any) => {
     console.log('GET request at /api/channel/messages')
     const { groupName, channelName } = req.query
     const q = await client.db(db).collection(collecMsg).find({groupName,channelName}).toArray()
@@ -78,93 +78,43 @@ router.get('/channel/messages', verifyAuth, async (req:any, res:any) => {
 
 
 
-router.post('/channel/create', verifyAdmin, async (req:any, res:any) => {
-    console.log(`POST request at /api/channel/create`)
+router.post('/create', verifyAdmin, async (req:any, res:any) => {
     console.log(req.body)
-    const { username, groupName, channelName } = req.body
-    let channels:string[] = []
-
-    console.log('\tLoading data...')
-
-    const users2 = await functions.retrieveUsers()
-
-    users2.forEach(user => {
-        console.log(`\tAdding channel ${channelName} to group ${groupName}`)
-        for (let user in users) {
-            if (users.hasOwnProperty(user)) {
-                if (users[user].groupAdmin) {
-                    for (let group of users[user].groups) {
-                        // console.log(group.name)
-                        if (group.name == groupName) {
-                            if (!group.channels.includes(channelName)) group.channels.push(channelName)
-                        }
-                    }
-                }
-            }
-        }
-    })
-
-    functions.writeUsers(users2)
-        
-    const users = await functions.retrieveUsers()
-    users.forEach(user => {
-        for (let user in users) {
-            if (users.hasOwnProperty(user)) {
-                users[user].groups.forEach((group:any) => {
-                    if (group.name===groupName) {
-                        // if channel is not in channel list, add it
-                        for (let channel of group.channels) {
-                            if (!channels.includes(channel)) channels.push(channel)
-                        }
-                    }
-                })
-            }
-        }
-        console.log(`\tFinished collating channels for group ${groupName}`)
-        console.log(channels)
-    })
-    res.send(channels)
+    const { groupName, channelName } = req.body
+    console.log(`POST request at /api/channel/create ${groupName}, ${channelName}`)
+    try {
+        let users = await functions.retrieveUsers()
+        users.forEach((user:UserDataTemplate) => {
+            let groups = user.groups
+            let changed = false
+            groups.forEach((group:typeGroup) => {
+                if (group.name===groupName && !group.channels.includes(channelName)) {group.channels.push(channelName); changed = true}
+            })
+            if (changed) client.db(db).collection(collecUsers).updateOne({username:user.username}, {$set: {groups}})
+        })
+        users = await functions.retrieveUsers()
+        res.json({success:true, users})
+    } catch (error) {console.log(error); res.json({success:false})}
 })
-
 
 router.post('/remove-channel', verifyAdmin, async (req:any, res:any) => {
     const { groupName, channelName } = req.body
     console.log('DELETE request at /api/channels/remove-user', groupName, channelName)
-    let channels:string[] = []
-
-    const users:UserDataTemplate[] = await functions.retrieveUsers()
+    let users:UserDataTemplate[] = await functions.retrieveUsers()
     users.forEach(user => {
-
-        // if (users.hasOwnProperty(user)) {
-            for (let group of user.groups) {
-                if (group.name === groupName) {
-                    if (group.channels.includes(channelName)) { // remove channel
-                        group.channels.splice(group.channels.indexOf(channelName), 1)
-                    }
-                }
+        let changed = false
+        let groups = user.groups
+        groups.forEach(group => {
+            if (group.name === groupName && group.channels.includes(channelName)) {
+                group.channels = group.channels.filter((channel) => channel != channelName)
+                changed = true
             }
-        // }
-        
-        functions.writeUsers(users)
-
-        for (let user in users) {
-            if (users.hasOwnProperty(user)) {
-                for (let group of users[user].groups) {
-                    if (group.name === groupName) {
-                        for (let channel of group.channels) {
-                            if (!channels.includes(channel)) channels.push(channel)
-                        }
-                    }
-                }
-            }
-        }
-        console.log(`\tResponding with new list of channels ${channels}`)
-        res.send(channels)
+        })
+        if (changed) client.db(db).collection(collecUsers).updateOne({username:user.username}, {$set: {groups}})
     })
+    users = await functions.retrieveUsers()
+    res.json({success:true, users})
 })
-
-
-
 
 router.post('/remove-user', async (req:any, res:any) => {
     console.log('DELETE request at /api/remove-user')

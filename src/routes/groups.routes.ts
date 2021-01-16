@@ -48,19 +48,14 @@ router.post('/channels', verifyAdmin, async (req:any, res:any) => {
     let channels:string[] = []
     const users:UserDataTemplate[] = await functions.retrieveUsers()
     users.forEach(user => {
-        // if (users.hasOwnProperty(user)) {
-            user.groups.forEach((group:typeGroup) => {
-                if (group.name === groupName) {  // found the group
-                    // if channel is not in channel list, add it
-                    for (let channel of group.channels) {
-                        if (!channels.includes(channel)) channels.push(channel)
-                    }
-                }
-            })
-        // }
+        user.groups.forEach((group:typeGroup) => {
+            if (group.name===groupName) {
+                for (let channel of group.channels) if (!channels.includes(channel)) channels.push(channel)
+            }
+        })
     })
     console.log(`Finished collating channels for group ${groupName}, ${channels}`)
-    res.json(channels)
+    res.json({channels})
 })
 
 
@@ -155,26 +150,12 @@ router.post('/add-user', verifyAdmin, async (req:any, res:any) => {
 router.post('/remove-user', verifyAdmin, async (req:any, res:any) => {
     let { usernameToRemove, groupName } = req.body
     console.log('POST request at /api/groups/remove-user', usernameToRemove, groupName)
-    let users2:UserDataTemplate[] = await functions.retrieveUsers()
-    users2.forEach(user => {
-        // for(group of users[username].groups) {
-        //     if(group.name === groupName) {
-        //         users[username].groups.splice(users[username].groups.indexOf(group), 1)
-        //         // console.log(users[username].groups.indexOf(group))
-        //     }
-        // }
-
-        user.groups.forEach((group) => {
-            if (user.username===usernameToRemove) {
-                if (group.name===groupName) user.groups.splice(user.groups.indexOf(group), 1)
-            }
-        })
-    })
-
-    functions.writeUsers(users2)
-    
-    const users = await functions.getAllUsersInGroup(groupName)
-    res.json(users)
+    if (groupName==='newbies' || groupName==='general') return res.json({success:false, cannot:true})
+    const user = await client.db(db).collection(collecUsers).findOne({username:usernameToRemove})
+    if (!user || user.superAdmin) return res.json({success:false, isAdmin:true})
+    await client.db(db).collection(collecUsers).updateOne({username:usernameToRemove}, {$pull: {groups:groupName}})
+    const allUsers = await functions.getAllUsersInGroup(groupName)
+    res.json({success:true, allUsers})
 })
 
 
