@@ -2,6 +2,7 @@ import express from 'express'
 import path from 'path'
 import { client } from './controllers/database'
 require('dotenv').config()
+import * as functions from './controllers/functions'
 
 export const jwtKey = process.env.jwtKey || ''
 
@@ -11,8 +12,9 @@ app.use(require('cors')())
 app.use(express.json())
 
 app.use('/images', express.static(path.resolve(__dirname, '..', 'src', 'images')))
-app.use('/api/user', require('./routes/user.routes'))
-app.use('/api', require('./routes/index.routes'))
+app.use('/api/users', require('./routes/users.routes'))
+app.use('/api/groups', require('./routes/groups.routes'))
+app.use('/api/channels', require('./routes/channels.routes'))
 app.use('/tv', require('./routes/tv'))
 
 const port = process.env.PORT || 3000

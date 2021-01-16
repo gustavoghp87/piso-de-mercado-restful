@@ -1,67 +1,35 @@
 import { typeGroup, UserDataTemplate } from "../models/UserDataTemplate"
 import { client, db, collecUsers } from './database'
-import { jwtKey } from '../index'
-import jwt from 'jsonwebtoken'
 
 
-export const verifyToken = (token:string) => {
-    const verify = jwt.verify(token, jwtKey)
-    if (verify) return true
-    return false
+export const retrieveUsers = async () => {
+    return await client.db(db).collection(collecUsers).find().toArray()
 }
 
-export const retrieveUsers = (callback:any) => {
-    client.db(db).collection(collecUsers).find().toArray((err:any, result:any) => {
-        callback(result)
-    })
-}
-
-export const getGroups = (res:any) => {
-    retrieveUsers((users:UserDataTemplate[]) => {
-        let groups:Object[] = []
-        for (let i = 0; i < users.length; i++) {
-            let userGroup = users[i].groups
-            for (let j = 0; j < userGroup.length; j++) {
-                if (!groups.includes(userGroup[j].name)) {
-                    groups.push(userGroup[j].name)
-                }
-            }
-        }
-        res.send(groups)
-    })
-}
-
-
-// get all the users in the group
-export const getAllUsersInGroup = (groupName:string, res:any) => {
+export const getAllUsersInGroup = async (groupName:string) => {
     let allUsers:string[] = []
-    retrieveUsers((users:UserDataTemplate[]) => {
-        for (let i = 0; i < users.length; i++) {
-            users[i].groups.forEach((group:typeGroup) => {
-                if (group.name === groupName) {
-                    if (!allUsers.includes(users[i].username)) allUsers.push(users[i].username)
-                }
-            })
-        }
-        console.log(`\tResponding back with all users ${allUsers}`)
-        return allUsers
+    const users:UserDataTemplate[] = await client.db(db).collection(collecUsers).find().toArray()
+    users.forEach(user => {
+        user.groups.forEach((group:typeGroup) => {
+            if (group.name===groupName && !allUsers.includes(user.username)) allUsers.push(user.username)
+        })
     })
+    return allUsers
 }
 
-// write to the database updating all the users
-export const writeUsers = (users:UserDataTemplate[], callback:any) => {
-    const collection = client.db(db).collection(collecUsers)
-    
-    for (let i = 0; i < users.length; i++) {
-        collection.updateOne({username: users[i].username}, {$set: users[i]},
-        (err:any, result:any) => {})
+export const writeUsers = (users:UserDataTemplate[]) => {
+    try {
+        users.forEach(async user => {
+            await client.db(db).collection(collecUsers).updateOne({username: user.username}, {$set: user})
+        })
+        return true
+    } catch (error) {
+        console.log(error)
+        return false
     }
-    callback()
 }
-
 
 export const createUser = async (username:string, password:string, email:string) => {
-
     const user:UserDataTemplate = {
         username,
         password,
@@ -93,4 +61,3 @@ export const createUser = async (username:string, password:string, email:string)
     if (!newUser) return false
     return true
 }
-
