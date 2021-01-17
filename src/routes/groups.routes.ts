@@ -1,4 +1,4 @@
-import { client, db, collecMsg, collecUsers } from '../controllers/database'
+import { client, db, collecUsers } from '../controllers/database'
 import { typeGroup, UserDataTemplate } from '../models/UserDataTemplate'
 import * as functions from '../controllers/functions'
 import { verifyAuth, verifyAdmin } from './verify'
@@ -9,38 +9,9 @@ export const router = require('express').Router()
 router.post('/', verifyAuth, async (req:any, res:any) => {
     console.log('GET request at /api/groups')
     const users:UserDataTemplate[] = await client.db(db).collection(collecUsers).find().toArray()
-    let groups:Object[] = []
-    users.forEach(user => {
-        let userGroup = user.groups
-        for (let j = 0; j < userGroup.length; j++) {
-            if (!groups.includes(userGroup[j].name)) groups.push(userGroup[j].name)
-        }
-    })
-    res.send(groups)
+    const allGroups = functions.getGroupsArray(users)
+    res.json({success:true, allGroups})
 })
-
-
-router.post('/remove-group', verifyAdmin, async (req:any, res:any) => {
-    console.log('DELETE request at /api/groups/remove-group')
-    const { groupName } = req.body
-
-    const users:UserDataTemplate[] = await client.db(db).collection(collecUsers).find().toArray()
-
-    users.forEach(user => {
-        user.groups.forEach(group => {if (group.name===groupName) user.groups.splice(user.groups.indexOf(groupName), 1)})
-    })
-
-    const writeUsers = await functions.writeUsers(users)
-    if (!writeUsers) return res.json({success:false})
-    
-    let allGroups:string[] = []
-    users.forEach(user => {
-        user.groups.forEach(group => {if (!allGroups.includes(group.name)) allGroups.push(group.name)})
-    })
-
-    res.json({allGroups})
-})
-
 
 router.post('/channels', verifyAdmin, async (req:any, res:any) => {
     const { groupName } = req.body
@@ -58,7 +29,6 @@ router.post('/channels', verifyAdmin, async (req:any, res:any) => {
     res.json({channels})
 })
 
-
 router.post('/users', verifyAuth, async (req:any, res:any) => {
     const { groupName } = req.body
     console.log(`GET request at /api/groups/users, ${groupName}`)
@@ -67,44 +37,40 @@ router.post('/users', verifyAuth, async (req:any, res:any) => {
     res.json({allUsers})
 })
 
-
-router.post('/create', verifyAdmin, (req:any, res:any) => {
+router.post('/create', verifyAdmin, async (req:any, res:any) => {
     console.log('POST request at /api/groups/create')
     const { username, groupName } = req.body
     console.log(`\tCreating new group ${groupName} for user ${username}`)
 
-    // retrieve the user's info
-    const collection = client.db(db).collection(collecUsers)
-    collection.find({username}).toArray( (err, result) => {
-        let groups = result[0].groups
-
-        // check if the group exists, if not, add it
-        let exists = false
-        for (let i = 0; i < groups.length; i++) {
-            if (groups[i].name === groupName) exists = true
-        }
-        if (!exists) {
-            groups.push({
-                name: groupName,
-                channels: ["general"]
-            })
-        }
-
-        collection.updateOne({username}, {$set: {groups}}, async (err, result) => {            
-            const users:UserDataTemplate[] = await client.db(db).collection(collecUsers).find().toArray()
-            let groups:string[] = []
-            users.forEach(user => {
-                let userGroup = user.groups
-                userGroup.forEach((group:typeGroup) => {
-                    if (!groups.includes(group.name)) groups.push(group.name)
-                })
-            })
-            console.log("Enviando array de grupos post crear grupo:", groups)
-            res.json({groups})
-        })
+    const user = await client.db(db).collection(collecUsers).findOne({username})
+    let exists = false
+    user.groups.forEach((group:typeGroup) => {
+        if (group.name===groupName) exists = true
     })
+    if (!exists) {
+        let groups:typeGroup[] = user.groups.push({
+            name: groupName,
+            channels: ["general"]
+        })
+        await client.db(db).collection(collecUsers).updateOne({username}, {$set: {groups}})
+    }
+    const users:UserDataTemplate[] = await client.db(db).collection(collecUsers).find().toArray()
+    const allGroups = functions.getGroupsArray(users)
+    res.json({success:true, allGroups})
 })
 
+router.post('/remove-group', verifyAdmin, async (req:any, res:any) => {
+    console.log('DELETE request at /api/groups/remove-group')
+    const { groupName } = req.body
+    const users1:UserDataTemplate[] = await client.db(db).collection(collecUsers).find().toArray()
+    users1.forEach(user => {
+        let groups = user.groups.filter((group:typeGroup) => group.name!==groupName)
+        client.db(db).collection(collecUsers).updateOne({username:user.username}, {$set: {groups}})
+    })
+    const users:UserDataTemplate[] = await client.db(db).collection(collecUsers).find().toArray()
+    const allGroups = functions.getGroupsArray(users)
+    res.json({success:true, allGroups})
+})
 
 router.post('/add-user', verifyAdmin, async (req:any, res:any) => {
     const { usernameToAdd, groupName } = req.body
@@ -145,8 +111,6 @@ router.post('/add-user', verifyAdmin, async (req:any, res:any) => {
     })
 })
 
-
-
 router.post('/remove-user', verifyAdmin, async (req:any, res:any) => {
     let { usernameToRemove, groupName } = req.body
     console.log('POST request at /api/groups/remove-user', usernameToRemove, groupName)
@@ -158,14 +122,16 @@ router.post('/remove-user', verifyAdmin, async (req:any, res:any) => {
     res.json({success:true, allUsers})
 })
 
-
 router.post('/make-user-group-admin', verifyAdmin, async (req:any, res:any) => {
     const { usernameToAdmin } = req.body
-    console.log('POST request at /api/makeUserGroupAdmin', usernameToAdmin)
-    const users:UserDataTemplate[] = await functions.retrieveUsers()
-    users.forEach(user => {if (user.username===usernameToAdmin) user.groupAdmin = true})
-    functions.writeUsers(users)
-    res.json({users})
+    console.log('POST request at /api/groups/make-user-group-admin', usernameToAdmin)
+    try {
+        await client.db(db).collection(collecUsers).updateOne({username:usernameToAdmin}, {$set: {groupAdmin:true, superAdmin:true}})
+        res.json({success:true})
+    } catch (error) {
+        console.log(error)
+        res.json({success:false})
+    }
 })
 
 

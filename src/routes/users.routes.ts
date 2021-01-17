@@ -99,10 +99,15 @@ router.post('/remove-user-from-system', verifyAdmin, async (req:any, res:any) =>
 router.post('/make-user-super-admin', verifyAdmin, async (req:any, res:any) => {
     const { usernameToAdmin } = req.body
     console.log('POST request at /api/make-user-super-admin', usernameToAdmin)
-    const user = await client.db(db).collection(collecUsers).findOne({username:usernameToAdmin})
-    if (!user || user.superAdmin) return res.json({success:false})
-    await client.db(db).collection(collecUsers).updateOne({username:usernameToAdmin}, {$set: {superAdmin:true, groupAdmin:true}})
-    res.json({success:true})
+    try {
+        const user = await client.db(db).collection(collecUsers).findOne({username:usernameToAdmin})
+        if (!user || user.superAdmin) return res.json({success:false})
+        await client.db(db).collection(collecUsers).updateOne({username:usernameToAdmin}, {$set: {superAdmin:true, groupAdmin:true}})
+        res.json({success:true})
+    } catch (error) {
+        console.log(error)
+        res.json({success:false})
+    }
 })
 
 router.post('/upload-image', (req:any, res:any) => {

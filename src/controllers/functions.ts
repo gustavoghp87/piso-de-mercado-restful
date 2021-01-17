@@ -17,16 +17,14 @@ export const getAllUsersInGroup = async (groupName:string) => {
     return allUsers
 }
 
-export const writeUsers = (users:UserDataTemplate[]) => {
-    try {
-        users.forEach(async user => {
-            await client.db(db).collection(collecUsers).updateOne({username: user.username}, {$set: user})
+export const getGroupsArray = (users:UserDataTemplate[]) => {
+    let allGroups:string[] = []
+    users.forEach(user => {
+        user.groups.forEach((group:typeGroup) => {
+            if (!allGroups.includes(group.name)) allGroups.push(group.name)
         })
-        return true
-    } catch (error) {
-        console.log(error)
-        return false
-    }
+    })
+    return allGroups
 }
 
 export const createUser = async (username:string, password:string, email:string) => {

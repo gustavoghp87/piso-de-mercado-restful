@@ -10,6 +10,7 @@ export type typeMessage = {
     profileImage: string
     isFile: boolean
     timestamp: number
+    timeArg: string
 }
 
 export const io = require('socket.io')(server, {
@@ -25,7 +26,7 @@ io.on('connection', (socket:any) => {
     
     socket.on('join', (content:typeMessage) => {
         console.log('someone joined', content)
-        client.db('chatencio').collection("messages").insertOne(content)
+        //client.db('chatencio').collection("messages").insertOne(content)
         const room = content.groupName + content.channelName
         socket.join(room)
         // socket.broadcast.in(room).emit(content)
@@ -34,7 +35,7 @@ io.on('connection', (socket:any) => {
     
     socket.on('leave', (content:typeMessage) => {
         console.log('Someone left', content)
-        client.db('chatencio').collection("messages").insertOne(content)
+        //client.db('chatencio').collection("messages").insertOne(content)
         const room = content.groupName + content.channelName
         socket.leave(room)
         // socket.broadcast.in(room).emit(content)

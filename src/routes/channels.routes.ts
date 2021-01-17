@@ -2,6 +2,8 @@ import { client, db, collecMsg, collecUsers } from '../controllers/database'
 import { typeGroup, UserDataTemplate } from '../models/UserDataTemplate'
 import * as functions from '../controllers/functions'
 import { verifyAuth, verifyAdmin } from './verify'
+import formidable from 'formidable'
+import path from 'path'
 
 
 export const router = require('express').Router()
@@ -78,6 +80,55 @@ router.post('/remove-user', async (req:any, res:any) => {
     const users:UserDataTemplate[] = await functions.retrieveUsers()
     res.json({success:true, users})
 })
+
+router.post('/upload-image', (req:any, res:any) => {
+    console.log('POST request at /api/user/upload-image', 'resolve:', path.resolve(__dirname, '..', '..', 'src', 'images'))
+    let form = new formidable.IncomingForm()
+    form.keepExtensions = true
+
+    form.on('error', (err) => {
+        console.log('error uploading fiel')
+        res.json({
+            result: "failed",
+            data: {},
+            numberOfImages: 0,
+            message: "Cannot upload images. Error: " + err
+        })
+    })
+
+    form.on('fileBegin', (name, file) => {
+        console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$", file)
+        
+        if (file.size<10000 && (file.name.includes('.jpg') || file.name.includes('.png') || file.name.includes('.jpeg'))) {
+            file.name = Date.now().toString() + "." + file.name.split('.')[file.name.split('.').length-1]
+            file.path = path.resolve(__dirname, '..', '..', 'src', 'images', file.name)
+            console.log('File path: ' + file.path)
+        } else res.json({success:false})
+    })
+
+    form.on('file', (field, file) => {
+        console.log('woo, uploaded file', file.size)
+        try {
+            res.json({
+                success: true,
+                data: {
+                    filename: file.name,
+                    size: file.size
+                },
+                numberOfImages: 1,
+                message: 'upload successful',
+                path: file.path
+            })
+        } catch (error) {
+            console.log("Ya enviado el res false")
+        }
+    })
+    
+    form.parse(req)
+})
+
+
+const name = Date.now().toString()
 
 
 module.exports = router
