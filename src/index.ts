@@ -2,7 +2,6 @@ import express from 'express'
 import path from 'path'
 import { client } from './controllers/database'
 require('dotenv').config()
-import * as functions from './controllers/functions'
 
 export const jwtKey = process.env.jwtKey || ''
 
@@ -18,12 +17,12 @@ app.use('/api/channels', require('./routes/channels.routes'))
 app.use('/tv', require('./routes/tv'))
 
 const port = process.env.PORT || 3000
-export const server = require('http').createServer(app)
+// export const server = require('http').createServer(app)
 
-client.connect().then((conn:any) => {
-    if (conn) console.log(`\nConnected successfully to 'piso-restful' database in Atlas MongoDB`)
-    server.listen(port, () => {
-        console.log(`Server started on port: ${port}\n`)
-        require('./routes/socket')
-    })
-})
+// client.connect().then((conn:any) => {
+//     if (conn) console.log(`\nConnected successfully to 'piso-restful' database in Atlas MongoDB`)
+//     server.listen(port, () => {
+//         console.log(`Server started on port: ${port}\n`)
+//         require('./routes/socket')
+//     })
+// })

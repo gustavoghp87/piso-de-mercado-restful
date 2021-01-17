@@ -2,6 +2,16 @@ import { client } from '../controllers/database'
 import { server } from '../index'
 
 
+export type typeMessage = {
+    username: string
+    groupName: string
+    channelName: string
+    message: string
+    profileImage: string
+    isFile: boolean
+    timestamp: number
+}
+
 export const io = require('socket.io')(server, {
     cors: {
         origin: "*",
@@ -12,35 +22,31 @@ export const io = require('socket.io')(server, {
 io.on('connection', (socket:any) => {
 
     console.log("Socket on", socket.id)
-    // join room
-    socket.on('join', (content:any) => {
-        console.log('someone joined')
-        console.log(content)
-        const collection = client.db('chatencio').collection("messages")
-        collection.insertOne(content)
-        let room = content.groupName + content.channelName
+    
+    socket.on('join', (content:typeMessage) => {
+        console.log('someone joined', content)
+        client.db('chatencio').collection("messages").insertOne(content)
+        const room = content.groupName + content.channelName
         socket.join(room)
         // socket.broadcast.in(room).emit(content)
-        io.sockets.in(room).emit('message', content)
+        socket.to(room).emit('message', content)
     })
     
-    socket.on('leave', (content:any) => {
-        console.log('Someone left')
-        console.log(content)
-        const collection = client.db('chatencio').collection("messages")
-        collection.insertOne(content)
-        let room = content.groupName + content.channelName
+    socket.on('leave', (content:typeMessage) => {
+        console.log('Someone left', content)
+        client.db('chatencio').collection("messages").insertOne(content)
+        const room = content.groupName + content.channelName
         socket.leave(room)
         // socket.broadcast.in(room).emit(content)
-        io.sockets.in(room).emit('message', content)
+        socket.to(room).emit('message', content)
     })
     
-    socket.on('new-message', (content:any) => {
+    socket.on('new-message', (content:typeMessage) => {
         console.log('NEW MESSAGE:', content)
-        const collection = client.db('chatencio').collection("messages")
-        collection.insertOne(content)
-        let room = content.groupName + content.channelName
+        client.db('chatencio').collection("messages").insertOne(content)
+        const room = content.groupName + content.channelName
         // io.emit('message', content)
-        io.sockets.in(room).emit('message', content)
+        socket.to(room).emit('message', content)
     })
+
 })
