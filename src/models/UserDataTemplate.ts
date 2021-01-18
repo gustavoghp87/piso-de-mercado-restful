@@ -13,10 +13,10 @@ export class UserDataTemplate {
     groups: typeGroup[]
     token:string
 
-    constructor() {
-        this.username = ""
-        this.password = "password"
-        this.email = ""
+    constructor(username:string, password:string, email:string) {
+        this.username = username
+        this.password = password
+        this.email = email
         this.superAdmin = false
         this.groupAdmin = false
         this.profileImage = "profile.png"

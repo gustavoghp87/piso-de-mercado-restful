@@ -26,36 +26,3 @@ export const getGroupsArray = (users:UserDataTemplate[]) => {
     })
     return allGroups
 }
-
-export const createUser = async (username:string, password:string, email:string) => {
-    const user:UserDataTemplate = {
-        username,
-        password,
-        email,
-        superAdmin: false,
-        groupAdmin: false,
-        profileImage: "profile.gif",
-        token: "",
-        groups: [
-            {
-                name: "newbies",
-                channels: [
-                    "general",
-                    "help"
-                ]
-            },
-            {
-                name: "general",
-                channels: [
-                    "general",
-                    "chitchat",
-                    "topic of the day"
-                ]
-            }
-        ]
-    }
-    await client.db(db).collection(collecUsers).insertOne(user)
-    const newUser = await client.db(db).collection(collecUsers).findOne({username:user.username})
-    if (!newUser) return false
-    return true
-}

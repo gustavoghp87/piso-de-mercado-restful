@@ -53,15 +53,21 @@ router.post('/verify-token', verifyAuth, async (req:any, res:any) => {
 })
 
 router.post('/create', async (req:any, res:any) => {
-    console.log('/user/create')
     const user = req.body
-    const preUser = await client.db(db).collection(collecUsers).findOne({username:user.usernameToCreate})
-    if (preUser) return res.json({success:false, exists:true})
-    if (user.password.length<10) return res.json({success:false, characters:true})
-    const cryptedPassword = await bcrypt.hash(user.password, 11)
-    const createUser = await functions.createUser(user.usernameToCreate, cryptedPassword, user.email)
-    if (createUser) res.json({success:true})
-    else res.json({success:false})
+    console.log('...................... /user/create', user)
+    try {
+        const preUser = await client.db(db).collection(collecUsers).findOne({username:user.usernameToCreate})
+        if (preUser) return res.json({success:false, exists:true})
+        if (user.password.length<10) return res.json({success:false, characters:true})
+        const cryptedPassword = await bcrypt.hash(user.password, 11)
+        const newUser = new UserDataTemplate(user.usernameToCreate, cryptedPassword, user.email)
+        await client.db(db).collection(collecUsers).insertOne(newUser)
+        const newUserInDB = await client.db(db).collection(collecUsers).findOne({username:user.username})
+        if (!newUserInDB) return false
+        res.json({success:true})
+    } catch (error) {
+        res.json({success:false})
+    }
 })
 
 router.post('/update-email', verifyAuth, (req:any, res:any) => {
