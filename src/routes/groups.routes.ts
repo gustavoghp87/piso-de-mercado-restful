@@ -44,9 +44,7 @@ router.post('/create', verifyAdmin, async (req:any, res:any) => {
 
     const user = await client.db(db).collection(collecUsers).findOne({username})
     let exists = false
-    user.groups.forEach((group:typeGroup) => {
-        if (group.name===groupName) exists = true
-    })
+    user.groups.forEach((group:typeGroup) => {if (group.name===groupName) exists = true})
     if (!exists) {
         let groups:typeGroup[] = user.groups.push({
             name: groupName,
@@ -75,40 +73,14 @@ router.post('/remove-group', verifyAdmin, async (req:any, res:any) => {
 router.post('/add-user', verifyAdmin, async (req:any, res:any) => {
     const { usernameToAdd, groupName } = req.body
     console.log('POST request at /api/groups/add', usernameToAdd, groupName)
-    const users:UserDataTemplate[] = await functions.retrieveUsers()
-    users.forEach(user => {
-        // check if the user exists
-        let exists = false
-
-        if (user.username === usernameToAdd) {
-            user.groups.forEach((group:any) => {
-                if (group.name === groupName) exists = true
-            })
-            if (!exists) {
-                user.groups.push({name: groupName, channels: ["general"] })
-                exists = true
-            }
-        }
-        
-        if (!exists) {
-            let user = new UserDataTemplate()
-            user.username = usernameToAdd
-            user.groups.push({name: groupName, channels: ["general"]})
-            // functions.addUser(user)
-        }
-
-        // functions.writeUsers(users, async () => {
-        //     console.log(users)
-            // getAllUsersInGroup(groupName, res)
-            // setTimeout(() => {
-                // const users:UserDataTemplate[] = await functions.retrieveUsers()
-                // users.forEach(user => {
-                //     res.send(users)
-                // })
-            // }, 100)
-            
-        // })
-    })
+    const user = await client.db(db).collection(collecUsers).findOne({username:usernameToAdd}) 
+    if (!user) return res.json({success:false, exists:true})
+    let groups:typeGroup[] = user.groups
+    let exists = false
+    groups.forEach(group => {if (group.name===groupName) exists = true})
+    if (!exists) groups.push({name: groupName, channels: ["general"]})
+    const allUsers = await functions.getAllUsersInGroup(groupName)
+    res.json({success:true, allUsers})
 })
 
 router.post('/remove-user', verifyAdmin, async (req:any, res:any) => {
