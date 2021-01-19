@@ -1,6 +1,5 @@
 import { client, db, collecPanel } from "../controllers/database"
 import { ObjectId } from 'mongodb'
-import { verifyAuth } from "./verify"
 
 
 const router = require('express').Router()
@@ -17,6 +16,7 @@ router.get('/', (req:any, res:any) => {
 })
 
 router.post('/', async (req:any, res:any) => {
+    try {console.log("POST REQUEST  ...  /api/panel", req.body.username)} catch (error) {console.log(error)}
     const obj = await client.db(db).collection(collecPanel).findOne({_id: new ObjectId('60046963c5b8c928f43d962a')})
     const ticketsObj = obj.ticketsObj
     console.log(ticketsObj.length)

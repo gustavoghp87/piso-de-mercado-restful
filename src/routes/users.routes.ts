@@ -27,25 +27,25 @@ router.post('/get-all', verifyAdmin, async (req:any, res:any) => {
     res.json({success:true, users})
 })
 
-
 router.post('/login', async (req:any, res:any) => {
     console.log("POST request at /api/user/login", req.body)
     const { usernameToLogin, password } = req.body
+    const preUser = await client.db(db).collection(collecUsers).findOne({username:usernameToLogin})
+    if (!preUser) return res.json({success:false})
+    console.log(preUser.username, preUser.password)
+    const verif = await bcrypt.compare(password, preUser.password)
+    console.log("Compare password and hash", verif)        
+    if (!verif) return res.json({success:false})
+    const newToken = jwt.sign({username:usernameToLogin}, jwtKey)
+    console.log(newToken)
+    await client.db(db).collection(collecUsers).updateOne({username:usernameToLogin}, {$set: {token:newToken}})
     const user = await client.db(db).collection(collecUsers).findOne({username:usernameToLogin})
-    if (user) {
-        console.log(user.username, user.password)
-        const verif = await bcrypt.compare(password, user.password)
-        console.log("Compare password and hash", verif)        
-        if (verif) {
-            const newToken = jwt.sign({username:usernameToLogin}, jwtKey)
-            client.db(db).collection(collecUsers).updateOne({username:usernameToLogin}, {$set: {token:newToken}})
-            res.json({success:true, user, newToken})
-        }
-        else res.json({success:false})
-    } else {
-        res.json({success:false})
-    }
+    res.json({success:true, user, newToken})
 })
+// DB:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlN1cGVyIiwiaWF0IjoxNjExMDEyMzc2fQ.R3k4wEcov88aKXCamF1zJOATJp1B3u0gXS-pIBKIFFY"
+// AP:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlN1cGVyIiwiaWF0IjoxNjExMDExNzkzfQ.FOyVf02tlYmO4keLBVnoAJuoBAI8U6EjscXQcyg-HIA"
+
+// "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlN1cGVyIiwiaWF0IjoxNjExMDEyMzc2fQ.R3k4wEcov88aKXCamF1zJOATJp1B3u0gXS-pIBKIFFY"
 
 router.post('/verify-token', verifyAuth, async (req:any, res:any) => {
     console.log("POST request at /api/user/verify-token", req.body)
@@ -53,17 +53,17 @@ router.post('/verify-token', verifyAuth, async (req:any, res:any) => {
 })
 
 router.post('/create', async (req:any, res:any) => {
-    const user = req.body
-    console.log('...................... /user/create', user)
+    const { usernameToCreate, password, email } = req.body
+    console.log('...................... /user/create', usernameToCreate, email)
     try {
-        const preUser = await client.db(db).collection(collecUsers).findOne({username:user.usernameToCreate})
-        if (preUser) return res.json({success:false, exists:true})
-        if (user.password.length<10) return res.json({success:false, characters:true})
-        const cryptedPassword = await bcrypt.hash(user.password, 11)
-        const newUser = new UserDataTemplate(user.usernameToCreate, cryptedPassword, user.email)
+        const user = await client.db(db).collection(collecUsers).findOne({username:usernameToCreate})
+        if (user) return res.json({success:false, exists:true})
+        if (password.length<10) return res.json({success:false, characters:true})
+        const cryptedPassword = await bcrypt.hash(password, 11)
+        const newUser = new UserDataTemplate(usernameToCreate, cryptedPassword, email)
         await client.db(db).collection(collecUsers).insertOne(newUser)
-        const newUserInDB = await client.db(db).collection(collecUsers).findOne({username:user.username})
-        if (!newUserInDB) return false
+        const newUserInDB = await client.db(db).collection(collecUsers).findOne({username:usernameToCreate})
+        if (!newUserInDB) return res.json({success:false})
         res.json({success:true})
     } catch (error) {
         res.json({success:false})
