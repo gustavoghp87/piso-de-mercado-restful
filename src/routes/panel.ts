@@ -19,8 +19,9 @@ router.post('/', async (req:any, res:any) => {
     try {console.log("POST REQUEST  ...  /api/panel", req.body.username)} catch (error) {console.log(error)}
     const obj = await client.db(db).collection(collecPanel).findOne({_id: new ObjectId('60046963c5b8c928f43d962a')})
     const ticketsObj = obj.ticketsObj
-    console.log(ticketsObj.length)
-    res.json({success:true, ticketsObj})
+    const ticketsLeadersObj = obj.ticketsLeadersObj
+    console.log(ticketsObj.length, ticketsLeadersObj.length)
+    res.json({success:true, ticketsObj, ticketsLeadersObj})
 })
 
 

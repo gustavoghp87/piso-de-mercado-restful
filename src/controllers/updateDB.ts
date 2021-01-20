@@ -5,6 +5,7 @@ import { ObjectId } from 'mongodb'
 
 export const updateDB = async () => {
     const tv = new TradingViewAPI()
+    console.log("General panel:")
     const tickets:string[] = [
         'BCBA:AGRO', 'BCBA:AUSO', 'BCBA:BHIP', 'BCBA:BOLT', 'BCBA:BPAT', 'CBA:BRIO',
         'BCBA:BRIO6', 'BCBA:CADO', 'BCBA:CAPX', 'BCBA:CARC', 'BCBA:CECO2', 'BCBA:CELU',
@@ -26,6 +27,7 @@ export const updateDB = async () => {
         i++
     }
     
+    console.log("Leader panel:")
     const ticketsLeaders:string[] = [
         'BCBA:ALUA', 'BCBA:BBAR', 'BCBA:BMA', 'BCBA:BYMA', 'BCBA:CEPU', 'BCBA:COME',
         'BCBA:CRES', 'BCBA:CVH', 'BCBA:EDN', 'BCBA:GGAL', 'BCBA:HARG', 'BCBA:LOMA',
