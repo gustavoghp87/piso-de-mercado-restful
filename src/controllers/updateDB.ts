@@ -1,6 +1,7 @@
 import { TradingViewAPI } from "tradingview-scraper"
 import { client, db, collecPanel } from './database'
 import { ObjectId } from 'mongodb'
+import { typeTicket } from '../models/typeTicket'
 
 
 export const updateDB = async () => {
@@ -21,7 +22,14 @@ export const updateDB = async () => {
     while (i<tickets.length) {
         console.log("Buscando", tickets[i])
         try {
-            const ticket = await tv.getTicker(tickets[i])
+            const ticket:typeTicket = await tv.getTicker(tickets[i])
+            try {
+                //console.log(ticket.last_update.toString());
+                ticket.last_update = ticket.last_update.toString().slice(4, 21)
+                //console.log(ticket.last_update.toString());
+            } catch (error) {
+                console.log(error)
+            }
             ticketsObj.push(ticket)
         } catch (error) {console.error(error)}
         i++
@@ -39,7 +47,15 @@ export const updateDB = async () => {
     while (j<ticketsLeaders.length) {
         console.log("Buscando", ticketsLeaders[j])
         try {
-            const ticket = await tv.getTicker(ticketsLeaders[j])
+            const ticket:typeTicket = await tv.getTicker(ticketsLeaders[j])
+            try {
+                //console.log(ticket.last_update.toString());
+                ticket.last_update = ticket.last_update.toString().slice(4, 21)
+                //console.log(ticket.last_update.toString());
+                
+            } catch (error) {
+                console.log(error)
+            }
             ticketsLeadersObj.push(ticket)
         } catch (error) {console.error(error)}
         j++
