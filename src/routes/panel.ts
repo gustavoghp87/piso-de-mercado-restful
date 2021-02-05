@@ -1,9 +1,9 @@
 import { client, db, collecPanel } from "../controllers/database"
 import { ObjectId } from 'mongodb'
+import { TradingViewAPI } from "tradingview-scraper"
 
 
 const router = require('express').Router()
-const { TradingViewAPI } = require("tradingview-scraper")
 const tv = new TradingViewAPI()
 
 router.get('/', (req:any, res:any) => {
