@@ -42,10 +42,6 @@ router.post('/login', async (req:any, res:any) => {
     const user = await client.db(db).collection(collecUsers).findOne({username:usernameToLogin})
     res.json({success:true, user, newToken})
 })
-// DB:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlN1cGVyIiwiaWF0IjoxNjExMDEyMzc2fQ.R3k4wEcov88aKXCamF1zJOATJp1B3u0gXS-pIBKIFFY"
-// AP:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlN1cGVyIiwiaWF0IjoxNjExMDExNzkzfQ.FOyVf02tlYmO4keLBVnoAJuoBAI8U6EjscXQcyg-HIA"
-
-// "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlN1cGVyIiwiaWF0IjoxNjExMDEyMzc2fQ.R3k4wEcov88aKXCamF1zJOATJp1B3u0gXS-pIBKIFFY"
 
 router.post('/verify-token', verifyAuth, async (req:any, res:any) => {
     console.log("POST request at /api/user/verify-token", req.body)
@@ -53,9 +49,12 @@ router.post('/verify-token', verifyAuth, async (req:any, res:any) => {
 })
 
 router.post('/create', async (req:any, res:any) => {
-    const { usernameToCreate, password, email } = req.body
+    let { usernameToCreate, password, email } = req.body
     console.log('...................... /user/create', usernameToCreate, email)
     try {
+        usernameToCreate = usernameToCreate.toLowerCase().trim()
+        if (!usernameToCreate || usernameToCreate.length>15) return res.json({success:false})
+        while (usernameToCreate.includes(' ')) usernameToCreate = usernameToCreate.replace(' ', '-')
         const user = await client.db(db).collection(collecUsers).findOne({username:usernameToCreate})
         if (user) return res.json({success:false, exists:true})
         if (password.length<10) return res.json({success:false, characters:true})

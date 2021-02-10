@@ -5,14 +5,21 @@ import { typeTicket } from '../models/typeTicket'
 
 
 const ToLocaleTime = (last_update:string) => {
-    const time = new Date(last_update).toLocaleString().slice(0, 15)
-    console.log(time)
-    return time
+    try {
+        const time = new Date(last_update).toLocaleString().slice(0, 15)
+        console.log(time)
+        return time
+    } catch (error) {
+        return "error"
+    }
 }
 
 export const updateDB = async () => {
     const tv = new TradingViewAPI()
-    console.log("General panel:")
+    let ticketsObj = []
+    let ticketsLeadersObj = []
+    let i = 0
+    let j = 0
     const tickets:string[] = [
         'BCBA:AGRO', 'BCBA:AUSO', 'BCBA:BHIP', 'BCBA:BOLT', 'BCBA:BPAT', 'CBA:BRIO',
         'BCBA:BRIO6', 'BCBA:CADO', 'BCBA:CAPX', 'BCBA:CARC', 'BCBA:CECO2', 'BCBA:CELU',
@@ -23,41 +30,30 @@ export const updateDB = async () => {
         'BCBA:METR', 'BCBA:MOLA', 'BCBA:MOLI', 'BCBA:MORI', 'BCBA:MTR', 'BCBA:OEST',
         'BCBA:PATA', 'BCBA:PGR', 'BCBA:POLL', 'BCBA:RICH', 'BCBA:RIGO', 'BCBA:ROSE'
     ]
-    let ticketsObj = []
-    let i = 0
-
-    while (i<tickets.length) {
-        console.log("Buscando", tickets[i])
-        try {
-            const ticket = await tv.getTicker(tickets[i])
-            try {
-                ticket.last_update = ToLocaleTime(ticket.last_update.toString())
-            } catch (error) {
-                console.log(error)
-            }
-            ticketsObj.push(ticket)
-        } catch (error) {console.error(error)}
-        i++
-    }
-    
-    console.log("Leader panel:")
     const ticketsLeaders:string[] = [
         'BCBA:ALUA', 'BCBA:BBAR', 'BCBA:BMA', 'BCBA:BYMA', 'BCBA:CEPU', 'BCBA:COME',
         'BCBA:CRES', 'BCBA:CVH', 'BCBA:EDN', 'BCBA:GGAL', 'BCBA:HARG', 'BCBA:LOMA',
         'BCBA:MIRG', 'BCBA:PAMP', 'BCBA:SUPV', 'BCBA:TECO2', 'BCBA:TGNO4', 'BCBA:TGSU2',
         'BCBA:TRAN', 'BCBA:TXAR', 'BCBA:VALO', 'BCBA:YPFD'
     ]
-    let ticketsLeadersObj = []
-    let j = 0
+    
+    console.log("General panel:")
+    while (i<tickets.length) {
+        console.log("Buscando", tickets[i])
+        try {
+            const ticket = await tv.getTicker(tickets[i])
+            ticket.last_update = ToLocaleTime(ticket.last_update.toString())
+            ticketsObj.push(ticket)
+        } catch (error) {console.error(error)}
+        i++
+    }
+    
+    console.log("Leader panel:")
     while (j<ticketsLeaders.length) {
         console.log("Buscando", ticketsLeaders[j])
         try {
             const ticket:typeTicket = await tv.getTicker(ticketsLeaders[j])
-            try {
-                ticket.last_update = ToLocaleTime(ticket.last_update.toString())
-            } catch (error) {
-                console.log(error)
-            }
+            ticket.last_update = ToLocaleTime(ticket.last_update.toString())
             ticketsLeadersObj.push(ticket)
         } catch (error) {console.error(error)}
         j++
