@@ -4,6 +4,12 @@ import { ObjectId } from 'mongodb'
 import { typeTicket } from '../models/typeTicket'
 
 
+const ToLocaleTime = (last_update:string) => {
+    const time = new Date(last_update).toLocaleString().slice(0, 15)
+    console.log(time)
+    return time
+}
+
 export const updateDB = async () => {
     const tv = new TradingViewAPI()
     console.log("General panel:")
@@ -19,14 +25,13 @@ export const updateDB = async () => {
     ]
     let ticketsObj = []
     let i = 0
+
     while (i<tickets.length) {
         console.log("Buscando", tickets[i])
         try {
-            const ticket:typeTicket = await tv.getTicker(tickets[i])
+            const ticket = await tv.getTicker(tickets[i])
             try {
-                //console.log(ticket.last_update.toString());
-                ticket.last_update = ticket.last_update.toString().slice(4, 21)
-                //console.log(ticket.last_update.toString());
+                ticket.last_update = ToLocaleTime(ticket.last_update.toString())
             } catch (error) {
                 console.log(error)
             }
@@ -49,10 +54,7 @@ export const updateDB = async () => {
         try {
             const ticket:typeTicket = await tv.getTicker(ticketsLeaders[j])
             try {
-                //console.log(ticket.last_update.toString());
-                ticket.last_update = ticket.last_update.toString().slice(4, 21)
-                //console.log(ticket.last_update.toString());
-                
+                ticket.last_update = ToLocaleTime(ticket.last_update.toString())
             } catch (error) {
                 console.log(error)
             }
