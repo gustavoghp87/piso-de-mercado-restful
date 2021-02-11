@@ -4,10 +4,10 @@ import { ObjectId } from 'mongodb'
 import { typeTicket } from '../models/typeTicket'
 
 
-const ToLocaleTime = (last_update:any) => {
+const ToLocaleTime = (last_update:string) => {
     try {
         const time = new Date(last_update).toLocaleString().slice(0, 15)
-        console.log(time)
+        console.log(last_update, " ... ", time)
         return time
     } catch (error) {
         return "error"
@@ -39,10 +39,10 @@ export const updateDB = async () => {
     
     console.log("General panel:")
     while (i<tickets.length) {
-        console.log("Buscando", tickets[i])
+        console.log("\nBuscando", tickets[i])
         try {
             const ticket = await tv.getTicker(tickets[i])
-            ticket.last_update = ToLocaleTime(ticket.last_update)
+            ticket.last_update = ToLocaleTime(ticket.last_update.toString())
             console.log("CHANGED TIME:", ticket.last_update)
             ticketsObj.push(ticket)
         } catch (error) {console.error(error)}
