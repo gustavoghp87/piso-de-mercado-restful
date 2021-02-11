@@ -6,12 +6,10 @@ import { typeTicket } from '../models/typeTicket'
 
 const ToLocaleTime = (last_update:string) => {
     try {
-        const time = new Date(last_update).toLocaleString().slice(0, 15)
-        console.log(last_update, " ... ", new Date(last_update), "...", new Date(last_update).toLocaleString(), "...", time)
+        const time = new Date(last_update).toLocaleString("es-AR", {timeZone:'America/Argentina/Buenos_Aires'}).slice(0, 15)
+        console.log(last_update, " ... ", new Date(last_update), "...", new Date(last_update).toLocaleString("es-AR", {timeZone:'America/Argentina/Buenos_Aires'}), "...", time)
         return time
-    } catch (error) {
-        return "error"
-    }
+    } catch (error) {return "error"}
 }
 
 export const updateDB = async () => {
