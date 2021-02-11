@@ -40,8 +40,8 @@ export const updateDB = async () => {
         console.log("\nBuscando", tickets[i])
         try {
             const ticket = await tv.getTicker(tickets[i])
-            ticket.last_update = ToLocaleTime(ticket.last_update.toString())
-            console.log("CHANGED TIME:", ticket.last_update)
+            ticket.my_last_update = ToLocaleTime(ticket.last_update.toString())
+            console.log("CHANGED TIME:", ticket.my_last_update)
             ticketsObj.push(ticket)
         } catch (error) {console.error(error)}
         i++
@@ -52,8 +52,8 @@ export const updateDB = async () => {
         console.log("Buscando", ticketsLeaders[j])
         try {
             const ticket:typeTicket = await tv.getTicker(ticketsLeaders[j])
-            ticket.last_update = ToLocaleTime(ticket.last_update.toString()).toString()
-            console.log("CHANGED TIME:", ticket.last_update)
+            ticket.my_last_update = ToLocaleTime(ticket.last_update.toString()).toString()
+            console.log("CHANGED TIME:", ticket.my_last_update)
             ticketsLeadersObj.push(ticket)
         } catch (error) {console.error(error)}
         j++

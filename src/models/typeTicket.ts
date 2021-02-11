@@ -5,6 +5,7 @@ export type typeTicket = {
     rch: number
     s: string
     last_update: string
+    my_last_update?: string
     volume: number
     update_mode: string
     type: string
