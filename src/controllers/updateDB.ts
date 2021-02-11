@@ -7,7 +7,7 @@ import { typeTicket } from '../models/typeTicket'
 const ToLocaleTime = (last_update:string) => {
     try {
         const time = new Date(last_update).toLocaleString().slice(0, 15)
-        console.log(last_update, " ... ", time)
+        console.log(last_update, " ... ", new Date(last_update), "...", new Date(last_update).toLocaleString(), "...", time)
         return time
     } catch (error) {
         return "error"
