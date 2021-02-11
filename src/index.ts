@@ -26,4 +26,8 @@ client.connect().then((conn:any) => {
         console.log(`Server started on port: ${port}\n`)
         require('./routes/socket')
     })
+    
+    
+    const time = new Date("2021-02-11T13:08:53.654Z").toLocaleString().slice(0, 15)
+    console.log(time)
 })

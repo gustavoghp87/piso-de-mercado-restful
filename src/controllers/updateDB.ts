@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb'
 import { typeTicket } from '../models/typeTicket'
 
 
-const ToLocaleTime = (last_update:string) => {
+const ToLocaleTime = (last_update:any) => {
     try {
         const time = new Date(last_update).toLocaleString().slice(0, 15)
         console.log(time)
@@ -42,7 +42,8 @@ export const updateDB = async () => {
         console.log("Buscando", tickets[i])
         try {
             const ticket = await tv.getTicker(tickets[i])
-            ticket.last_update = ToLocaleTime(ticket.last_update.toString())
+            ticket.last_update = ToLocaleTime(ticket.last_update)
+            console.log("CHANGED TIME:", ticket.last_update)
             ticketsObj.push(ticket)
         } catch (error) {console.error(error)}
         i++
@@ -54,6 +55,7 @@ export const updateDB = async () => {
         try {
             const ticket:typeTicket = await tv.getTicker(ticketsLeaders[j])
             ticket.last_update = ToLocaleTime(ticket.last_update.toString())
+            console.log("CHANGED TIME:", ticket.last_update)
             ticketsLeadersObj.push(ticket)
         } catch (error) {console.error(error)}
         j++
