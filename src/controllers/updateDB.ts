@@ -54,7 +54,7 @@ export const updateDB = async () => {
         console.log("Buscando", ticketsLeaders[j])
         try {
             const ticket:typeTicket = await tv.getTicker(ticketsLeaders[j])
-            ticket.last_update = ToLocaleTime(ticket.last_update.toString())
+            ticket.last_update = ToLocaleTime(ticket.last_update.toString()).toString()
             console.log("CHANGED TIME:", ticket.last_update)
             ticketsLeadersObj.push(ticket)
         } catch (error) {console.error(error)}
